@@ -1,0 +1,27 @@
+{% extends 'main.htm' %} {% load static %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/store.css' %}" />
+<div class="row pt-4">
+  {% for product in product %}
+  <div class="col-lg-3 mb-4">
+    <div class="card product">
+      <img class="thumbnail" src="{{product.image.url}}" />
+      <div class="box-element product">
+        <h6><strong>{{product.name}}</strong></h6>
+        <hr />
+        <button
+          data-product="{{product.id}}"
+          data-action="add"
+          class="btn btn-outline-secondary add-btn update-cart btn-sm"
+        >
+          Add to Cart
+        </button>
+        <a class="btn btn-outline-success btn-sm" href="#">View</a>
+        <h5 class="price">
+          <strong>${{product.price|floatformat:2}}</strong>
+        </h5>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock content %}
