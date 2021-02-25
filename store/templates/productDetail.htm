@@ -1,24 +1,25 @@
 {% extends 'main.htm' %} {% load static %} {% block content %}
-<div class="row pt-4">
-  <div class="col-lg-3 mb-4">
-    <div class="card product">
-      <img class="thumbnail" src="{{product.image.url}}" />
-      <div class="box-element product">
-        <h6><strong>{{product.name}}</strong></h6>
-        <hr />
-        <button
-          data-product="{{product.id}}"
-          data-action="add"
-          class="btn btn-outline-secondary add-btn update-cart btn-sm"
-        >
-          Add to Cart
-        </button>
-        <a class="btn btn-outline-success btn-sm" href="{% url 'product_detail' product.id %}">View</a>
-        <h5 class="price">
-          <strong>${{product.price|floatformat:2}}</strong>
-        </h5>
-      </div>
+<div class="row">
+  <div class="col-3">
+    <div class="card">
+      <img class="thumbnail card " src="{{product.image.url}}" />
     </div>
+  </div>
+  <div class="col-9 float-left">
+    <h2><strong>{{product.name}}</strong></h2>
+    <h5 class="price">
+      <strong>${{product.price}}</strong>
+    </h5>
+    <hr class="float-left hrProductDetail" />
+    <br />
+    <br />
+    <button
+      data-product="{{product.id}}"
+      data-action="add"
+      class="btn btn-outline-secondary add-btn update-cart btn-lg"
+    >
+      Add to Cart
+    </button>
   </div>
 </div>
 {% endblock content %}

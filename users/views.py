@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView,DetailView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-
+from store.models import * 
 
 def register(request):
     if request.method == 'POST':
@@ -23,8 +23,17 @@ def register(request):
 @login_required
 def profile(request):
     current_user = request.user
-    # context = {
-    #     'posts': Post.objects.filter(author_id=current_user).order_by('-date_posted')
-    # }
-    return render(request, 'users/profile.htm', context)
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_item
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping': False}
+        cartItems = order['get_cart_item']
+
+    context = {'items': items, 'order': order, 'cartItems': cartItems}
+    return render(request, 'users/profile.htm',context)
 

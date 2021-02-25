@@ -27,7 +27,7 @@ def ProductDetailView(request, pk):
     try:
         p = Product.objects.get(pk=pk)
     except Product.DoesNotExist:
-        raise Http404("Poll does not exist")
+        raise Http404("does not exist")
 
     if request.user.is_authenticated:
         customer = request.user.customer
