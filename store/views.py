@@ -1,4 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
+from django.http import HttpResponseRedirect,Http404
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView)
 from store.models import *
 from django.http import JsonResponse
 import json
@@ -14,11 +17,31 @@ def store(request):
         cartItems = order.get_cart_item
     else:
         items = []
-        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping':False}
+        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping': False}
         cartItems = order['get_cart_item']
     products = Product.objects.all()
     context = {'product': products, 'cartItems': cartItems}
     return render(request, 'store.htm', context)
+
+def ProductDetailView(request, pk):
+    try:
+        p = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        raise Http404("Poll does not exist")
+
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_item
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping': False}
+        cartItems = order['get_cart_item']
+
+    context = {'items': items, 'order': order, 'cartItems': cartItems, 'product': p}
+    return render(request, 'productDetail.htm', context)
 
 
 def cart(request):
@@ -28,13 +51,14 @@ def cart(request):
             customer=customer, complete=False)
         items = order.orderitem_set.all()
         cartItems = order.get_cart_item
-    else:        
+    else:
         items = []
-        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping':False}
+        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping': False}
         cartItems = order['get_cart_item']
 
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'cart.htm', context)
+
 
 def checkout(request):
     if request.user.is_authenticated:
@@ -45,9 +69,9 @@ def checkout(request):
         cartItems = order.get_cart_item
     else:
         items = []
-        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping':False}
+        order = {'get_cart_total': 0, 'get_cart_item': 0, 'shipping': False}
         cartItems = order['get_cart_item']
-        
+
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'checkout.htm', context)
 
@@ -77,13 +101,15 @@ def updateItem(request):
         orderItem.delete()
     return JsonResponse('Item was added', safe=False)
 
+
 def processOrder(request):
     transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
-    
+
     if request.user.is_authenticated:
         customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
         total = float(data['form']['total'])
         order.transaction_id = transaction_id
 
@@ -93,14 +119,14 @@ def processOrder(request):
 
         if order.shipping == True:
             ShoppingAddress.objects.create(
-                    customer = customer,
-                    order= order,
-                    address=data['shipping']['address'],
-                    city=data['shipping']['city'],
-                    state=data['shipping']['state'],
-                    zipcode=data['shipping']['zipcode'],
-                )
-        
+                customer=customer,
+                order=order,
+                address=data['shipping']['address'],
+                city=data['shipping']['city'],
+                state=data['shipping']['state'],
+                zipcode=data['shipping']['zipcode'],
+            )
+
     else:
         print('User is not logged in')
     return JsonResponse('Payment', safe=False)
